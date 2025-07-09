@@ -1,2 +1,6 @@
 streamlit
 mysql-connector-python
+ultralytics
+Pillow
+numpy
+scikit-learn

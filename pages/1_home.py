@@ -4,6 +4,10 @@ import os
 import datetime
 from ultralytics import YOLO
 from db import simpan_record, get_no_sambung, get_harga_per_kubik
+import numpy as np
+import pickle
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 # CEK LOGIN
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
@@ -32,6 +36,33 @@ camera_photo = col2.camera_input("Ambil Foto dari Kamera")
 # Gunakan salah satu
 image_data = uploaded_file or camera_photo
 
+# Load model dan scaler K-Means
+# with open("KMeans_Model/kmeans_model.pkl", "rb") as f:
+#     kmeans_model = pickle.load(f)
+
+# with open("KMeans_Model/scaler.pkl", "rb") as f:
+#     scaler = pickle.load(f)
+# Scaling
+# scaler = StandardScaler()
+# scaled_data = scaler.fit_transform(data)
+
+# Clustering
+kmeans = KMeans(n_clusters=3, random_state=42)
+# kmeans.fit(scaled_data)
+os.makedirs("KMeans_Model", exist_ok=True)
+with open("KMeans_Model/kmeans_model.pkl", "wb") as f:
+    pickle.dump(kmeans, f)
+
+# with open("KMeans_Model/scaler.pkl", "wb") as f:
+#     pickle.dump(scaler, f)
+
+# Mapping cluster ke label
+label_map = {
+    0: "penggunaan tinggi",
+    1: "penggunaan rendah",
+    2: "penggunaan fluktuatif"
+}
+
 if image_data:
     img = Image.open(image_data)
     st.image(img, caption="Gambar Terunggah", use_column_width=True)
@@ -53,6 +84,14 @@ if image_data:
             hasil_ocr = "12345678"
             kubik = 25.4
             harga = kubik * get_harga_per_kubik(selected_no_sambung)
+            
+            # Buat array fitur untuk prediksi cluster
+            X_pred = np.array([[kubik, bulan]])
+            # X_scaled = scaler.transform(X_pred)
+            # cluster = kmeans.predict(X_scaled)[0]
+            # kategori = label_map[cluster]
+            
+            # st.markdown(f"**📊 Kategori Pengguna (K-Means):** `{kategori}`")
 
             simpan_record(
                 username=st.session_state.username,
