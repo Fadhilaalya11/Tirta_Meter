@@ -77,8 +77,25 @@ if image_data:
 
             model = YOLO("Yolov8_Model/dila_model.pt")
             results = model(filepath)
+            # Ambil bounding box
+            boxes = results[0].boxes
+            if boxes is None or len(boxes) == 0:
+                st.warning("⚠️ Tidak ada area angka yang terdeteksi. Silakan foto ulang.")
+                st.stop()
+
+            # Ambil nilai confidence tertinggi
+            confidences = boxes.conf.cpu().numpy()
+            max_conf = max(confidences)
+
+            # Tampilkan gambar hasil deteksi
             det_img = results[0].plot()
             st.image(det_img, caption="Deteksi Angka", use_column_width=True)
+
+            if max_conf < 0.8:
+                st.error(f"❌ Deteksi tidak cukup yakin (confidence: {max_conf:.2f}). Silakan ambil foto ulang.")
+                st.stop()
+                det_img = results[0].plot()
+                st.image(det_img, caption="Deteksi Angka", use_column_width=True)
 
             # Dummy OCR
             hasil_ocr = "12345678"
