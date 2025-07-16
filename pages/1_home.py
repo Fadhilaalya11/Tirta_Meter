@@ -62,7 +62,7 @@ if image_data:
             with open(filepath, "wb") as f:
                 f.write(image_data.getvalue())
 
-            model = YOLO("Yolov8_Model/dila_model.pt")
+            model = YOLO("Yolov8_Model\best.pt")
             results = model(filepath)
             # Ambil bounding box
             boxes = results[0].boxes
