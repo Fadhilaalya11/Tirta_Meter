@@ -1,7 +1,11 @@
 streamlit
-mysql-connector-python
 ultralytics
 Pillow
 numpy
 scikit-learn
 seaborn
+mysql-connector-python
+pandas
+matplotlib
+opencv-python
+plotly

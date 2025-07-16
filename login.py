@@ -71,6 +71,6 @@ if st.button("Login"):
         st.session_state.logged_in = True
         st.session_state.username = username
         st.success("Login berhasil!")
-        st.switch_page("pages/1_home.py")
+        st.switch_page("pages/1_scan_watermeter.py")
     else:
         st.error("Username atau password salah.")
