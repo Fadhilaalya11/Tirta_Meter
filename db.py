@@ -1,7 +1,7 @@
 import mysql.connector
 from datetime import datetime
 
-# Ganti dengan konfigurasi MySQL kamu
+# Koneksi ke database MySQL
 def get_connection():
     return mysql.connector.connect(
         host="localhost",
@@ -21,7 +21,7 @@ def check_login(username, password):
     conn.close()
     return result is not None
 
-# Ambil data nomor sambung
+# Ambil daftar nomor sambung dan nama pelanggan
 def get_no_sambung():
     conn = get_connection()
     cursor = conn.cursor()
@@ -31,7 +31,7 @@ def get_no_sambung():
     conn.close()
     return data
 
-# Ambil harga per kubik
+# Ambil harga per kubik berdasarkan no_sambung
 def get_harga_per_kubik(no_sambung):
     conn = get_connection()
     cursor = conn.cursor()
@@ -41,31 +41,125 @@ def get_harga_per_kubik(no_sambung):
     conn.close()
     return result[0] if result else 0
 
-# Simpan record ke database
-def simpan_record(username, no_sambung, path_gambar, hasil, kubikasi, harga):
+# Simpan record hasil deteksi
+def simpan_record(username, no_sambung, path_gambar, hasil, angka_meter, pemakaian, total_harga):
     conn = get_connection()
     cursor = conn.cursor()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     query = """
-        INSERT INTO meteran_record (username, no_sambung, tanggal, path_gambar, hasil_angka, kubikasi, total_harga)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO meteran_record (
+            username, no_sambung, tanggal, path_gambar, hasil_angka,
+            kubikasi, pemakaian, total_harga
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """
-    cursor.execute(query, (username, no_sambung, now, path_gambar, hasil, kubikasi, harga))
+    cursor.execute(query, (
+        username, no_sambung, now, path_gambar, hasil,
+        angka_meter, pemakaian, total_harga
+    ))
     conn.commit()
     cursor.close()
     conn.close()
 
-# Ambil semua record
+# Ambil semua record dari meteran_record
 def ambil_semua_record():
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-        SELECT id, username, no_sambung, tanggal, path_gambar, hasil_angka, kubikasi, total_harga
+        SELECT 
+            id,
+            username,
+            no_sambung,
+            tanggal,
+            path_gambar,
+            hasil_angka,
+            kubikasi,
+            pemakaian,
+            total_harga
         FROM meteran_record
         ORDER BY tanggal DESC
     """
     cursor.execute(query)
     results = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]  # ambil nama kolom otomatis
     cursor.close()
     conn.close()
-    return results
+    return results, columns
+
+# Ambil hasil deteksi terakhir untuk pelanggan tertentu
+def get_last_detection(no_sambung):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT hasil_angka FROM meteran_record
+        WHERE no_sambung = %s
+        ORDER BY tanggal DESC
+        LIMIT 1
+    """, (no_sambung,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else None
+
+# Hitung jumlah admin
+def count_admins():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM user")
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else 0
+
+# Hitung jumlah pelanggan yang sudah diambil bulan ini
+def count_sudah_diambil_bulan_ini():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(DISTINCT no_sambung)
+        FROM meteran_record
+        WHERE MONTH(tanggal) = MONTH(CURDATE())
+          AND YEAR(tanggal) = YEAR(CURDATE())
+    """)
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else 0
+
+# Hitung jumlah pelanggan yang belum diambil bulan ini
+def count_belum_diambil_bulan_ini():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM pelanggan
+        WHERE no_sambung NOT IN (
+            SELECT DISTINCT no_sambung
+            FROM meteran_record
+            WHERE MONTH(tanggal) = MONTH(CURDATE())
+              AND YEAR(tanggal) = YEAR(CURDATE())
+        )
+    """)
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else 0
+
+# (Opsional) Ambil daftar pelanggan yang belum diambil bulan ini
+def get_daftar_belum_diambil_bulan_ini():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * FROM pelanggan
+        WHERE no_sambung NOT IN (
+            SELECT DISTINCT no_sambung
+            FROM meteran_record
+            WHERE MONTH(tanggal) = MONTH(CURDATE())
+              AND YEAR(tanggal) = YEAR(CURDATE())
+        )
+    """)
+    results = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    cursor.close()
+    conn.close()
+    return results, columns
+
