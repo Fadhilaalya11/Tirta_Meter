@@ -6,15 +6,17 @@ import base64
 # Konfigurasi halaman utama
 st.set_page_config(page_title="TirtaWijaya App", layout="wide")
 
+# Inisialisasi session_state
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
 # Fungsi: encode gambar untuk background
 def get_base64_of_bin_file(bin_file_path):
     with open(bin_file_path, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
-
-# Inisialisasi sesi
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
 
 # ======== LOGIN SECTION ========
 if not st.session_state.logged_in:
@@ -66,7 +68,7 @@ if not st.session_state.logged_in:
         else:
             st.error("Username atau password salah.")
 
-    st.stop()  # Hentikan eksekusi sampai login berhasil
+    st.stop()
 
 # ======== MENU SECTION (Setelah Login) ========
 # Sidebar navigasi
