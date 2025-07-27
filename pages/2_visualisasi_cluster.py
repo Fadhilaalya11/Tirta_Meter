@@ -2,16 +2,23 @@ import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Visualisasi Cluster", layout="wide")
-st.title("Peta Visualisasi Klaster Pelanggan PDAM")
+def app():
+    st.title("Peta Visualisasi Klaster Pelanggan PDAM")
 
-# ===== Tampilkan Tabel Data =====
-df = pd.read_csv("assets/data_clustered_with_coords.csv")
-st.subheader("Data Pelanggan")
-st.dataframe(df)
+    # ===== Tampilkan Tabel Data =====
+    try:
+        df = pd.read_csv("assets/data_clustered_with_coords.csv")
+        st.subheader("📊 Data Pelanggan Terklaster")
+        st.dataframe(df, use_container_width=True)
+    except FileNotFoundError:
+        st.error("❌ File `data_clustered_with_coords.csv` tidak ditemukan.")
+        return
 
-# ===== Tampilkan Peta Folium (HTML) =====
-st.subheader("Peta Klasterisasi")
-with open("assets/map_clustered.html", 'r', encoding='utf-8') as f:
-    map_html = f.read()
-components.html(map_html, height=600)
+    # ===== Tampilkan Peta Folium (HTML) =====
+    st.subheader("🗺️ Peta Klasterisasi Pelanggan")
+    try:
+        with open("assets/map_clustered.html", 'r', encoding='utf-8') as f:
+            map_html = f.read()
+        components.html(map_html, height=600)
+    except FileNotFoundError:
+        st.error("❌ File `map_clustered.html` tidak ditemukan.")
