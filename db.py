@@ -1,14 +1,21 @@
 import mysql.connector
+import os
+from dotenv import load_dotenv
 from datetime import datetime
 
-# Koneksi ke database MySQL
+# Load variabel dari .env
+load_dotenv()
+
+# Koneksi ke database Railway
 def get_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",  
-        database="tirtawijaya"       
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT"))
     )
+
 
 # Login Check
 def check_login(username, password):
