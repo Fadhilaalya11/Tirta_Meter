@@ -59,10 +59,9 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ========== SETELAH LOGIN ==========
-st.sidebar.title("Menu")
 st.sidebar.markdown(f"Halo, **{st.session_state.username}** 👋")
 
-menu = st.sidebar.radio("Navigasi", [
+menu = st.sidebar.radio("Menu", [
     "Dashboard",
     "Scan Watermeter",
     "Visualisasi Cluster",
