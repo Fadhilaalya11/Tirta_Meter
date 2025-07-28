@@ -79,15 +79,15 @@ def load_module_from_file(filepath):
     return module
 
 if menu == "Dashboard":
-    mod = load_module_from_file("pages/0_dashboard.py")
+    mod = load_module_from_file("modules/0_dashboard.py")
     mod.app()
 
 elif menu == "Scan Watermeter":
-    mod = load_module_from_file("pages/1_scan_watermeter.py")
+    mod = load_module_from_file("modules/1_scan_watermeter.py")
     mod.app()
 
 elif menu == "Visualisasi Cluster":
-    mod = load_module_from_file("pages/2_visualisasi_cluster.py")
+    mod = load_module_from_file("modules/2_visualisasi_cluster.py")
     mod.app()
 
 elif menu == "Logout":
