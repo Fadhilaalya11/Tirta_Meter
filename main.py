@@ -5,9 +5,18 @@ import base64
 import importlib.util
 import os
 
-st.set_page_config(page_title="TirtaWijaya App", layout="wide")
+# ========== KONFIGURASI HALAMAN ========== #
+st.set_page_config(page_title="TirtaWijaya App", layout="wide", initial_sidebar_state="collapsed")
 
-# Inisialisasi session_state
+# ========== SEMBUNYIKAN SIDEBAR STREAMLIT DEFAULT ========== #
+st.markdown("""
+    <style>
+    [data-testid="stSidebarNav"] { display: none; }
+    [data-testid="stSidebar"] > div:first-child { display: none; }
+    </style>
+""", unsafe_allow_html=True)
+
+# ========== INISIALISASI SESSION ========== #
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
@@ -15,13 +24,22 @@ if "username" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "Dashboard"  # default halaman
 
-# Fungsi: encode gambar untuk background
+# ========== FUNGSI UTILITY ========== #
 def get_base64_of_bin_file(bin_file_path):
     with open(bin_file_path, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-# ========== LOGIN PAGE ==========
+def load_module_from_file(filepath):
+    if not os.path.exists(filepath):
+        st.error(f"Halaman `{filepath}` tidak ditemukan.")
+        return None
+    spec = importlib.util.spec_from_file_location("dynamic_module", filepath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+# ========== LOGIN PAGE ========== #
 if not st.session_state.logged_in:
     bg_image = get_base64_of_bin_file("assets/Background.jpg")
     st.markdown(f"""
@@ -67,7 +85,7 @@ if not st.session_state.logged_in:
             st.error("Username atau password salah.")
     st.stop()
 
-# ========== SETELAH LOGIN ==========
+# ========== MENU ========== #
 st.sidebar.title("Menu")
 st.sidebar.markdown(f"Halo, **{st.session_state.username}** 👋")
 
@@ -80,25 +98,18 @@ menu = st.sidebar.radio("Navigasi", [
 
 st.session_state.page = menu
 
-# ========== LOAD HALAMAN ==========
-
-def load_module_from_file(filepath):
-    spec = importlib.util.spec_from_file_location("dynamic_module", filepath)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
+# ========== PANGGIL HALAMAN ========== #
 if menu == "Dashboard":
     mod = load_module_from_file("pages/0_dashboard.py")
-    mod.app()
+    if mod: mod.app()
 
 elif menu == "Scan Watermeter":
     mod = load_module_from_file("pages/1_scan_watermeter.py")
-    mod.app()
+    if mod: mod.app()
 
 elif menu == "Visualisasi Cluster":
     mod = load_module_from_file("pages/2_visualisasi_cluster.py")
-    mod.app()
+    if mod: mod.app()
 
 elif menu == "Logout":
     st.session_state.clear()
