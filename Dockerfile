@@ -16,8 +16,8 @@ COPY . .
 # Install dependensi Python
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Ekspos port default Railway (8080!)
-EXPOSE 8080
+# Ekspos port default Railway (8051!)
+EXPOSE 8051
 
 # Jalankan Streamlit saat container dimulai (dengan port 8080)
-CMD ["streamlit", "run", "main.py", "--server.port=8080", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "main.py", "--server.port=8051", "--server.address=0.0.0.0"]
